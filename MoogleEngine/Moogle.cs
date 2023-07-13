@@ -6,7 +6,7 @@ public class Corpus{
     string FilePath = @"C:\Skewl\Proyecto Prog\moogle-main\Content";
     string[] Titles; //los titulos de los documentos
     double[,] TfIDFMatrix; //Matriz con valores de TFIDF de cada palabra en cada documento
-    string[] DocPaths; //Path de cada documento
+    public string[] DocPaths; //Path de cada documento
     string[] WordVector; //vector con todas las palabras del corpus con su valor de IDF asignado
 
     public Corpus()
@@ -254,9 +254,10 @@ public string[] CreateSnippets(string query)
     {
         string[] Textos = new string[Este.DocPaths.Length];
         string[] output = new string[Textos.Length];
-        foreach(string path in Este.DocPaths)
+        for (int i = 0; i < Este.DocPaths.Length; i++)
         {
-           Textos [i] = File.ReadAllText(path);
+            string path = Este.DocPaths[i];
+            Textos [i] = File.ReadAllText(path);
         }
         string[] FirstOraciones = new string[Textos.Length];
         for (int i = 0; i < Textos.Length; i++)
