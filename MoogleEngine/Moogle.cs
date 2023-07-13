@@ -184,7 +184,7 @@ public class Moogle
                 return oracion;
             }
         }
-        return null;
+        return "...";
     }
      public static int LastValueIndex(double[] array) // devuelve el indice del ultimo valor antes de 0 en un array ordenado (-1 si esta vacio)
     {
