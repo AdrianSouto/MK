@@ -16,19 +16,6 @@ public class Corpus{
         WordVector = AllWords(FilePath);
         Titles = GetTitulos(FilePath);
     }
-    
-    public string PrimeraOracionQueContiene(string texto , string palabra) //Halla la primera oracion de un texto que contenga la palabra introducida
-    {
-        string[] oraciones = texto.Split(".");
-        foreach (string oracion in oraciones)
-        {
-            if(oracion.Contains(palabra))
-            {
-                return oracion;
-            }
-        }
-        return null;
-    }
     public string[] CloneTitles()
     {
         string[] output = Titles;
@@ -186,6 +173,19 @@ public double[] VectorProduct(double[] queryVector)
 public class Moogle
 {
         Corpus Este = new Corpus(); 
+
+    public string PrimeraOracionQueContiene(string texto , string palabra) //Halla la primera oracion de un texto que contenga la palabra introducida
+    {
+        string[] oraciones = texto.Split(".");
+        foreach (string oracion in oraciones)
+        {
+            if(oracion.Contains(palabra))
+            {
+                return oracion;
+            }
+        }
+        return null;
+    }
      public static int LastValueIndex(double[] array) // devuelve el indice del ultimo valor antes de 0 en un array ordenado (-1 si esta vacio)
     {
         for (int i = 0; i < array.Length; i++)
@@ -266,7 +266,7 @@ public string[] CreateSnippets(string query)
         string[] OracionQuery = new string[Textos.Length];
         for (int i = 0; i < Textos.Length; i++)
         {
-            OracionQuery[i] = Corpus.PrimeraOracionQueContiene(Textos[i] , query);
+            OracionQuery[i] = PrimeraOracionQueContiene(Textos[i] , query);
         }
         for (int i = 0; i < Textos.Length; i++)
         {
