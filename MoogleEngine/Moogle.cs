@@ -2,21 +2,21 @@
 using System.IO;
 using System;
 public class Corpus{
-    Corpus Este = new Corpus(); 
+
     string FilePath = @"C:\Skewl\Proyecto Prog\moogle-main\Content";
-    string[] Titles; //los titulos de los documentos
-    double[,] TfIDFMatrix; //Matriz con valores de TFIDF de cada palabra en cada documento
+    public string[] Titles; //los titulos de los documentos
+    public double[,] TfIDFMatrix; //Matriz con valores de TFIDF de cada palabra en cada documento
     public string[] DocPaths; //Path de cada documento
     string[] WordVector; //vector con todas las palabras del corpus con su valor de IDF asignado
 
     public Corpus()
     {
-        TfIDFMatrix = TF_IDF(TFMatrix(FilePath),IDFVector(FilePath));
+        TfIDFMatrix = TF_IDF(TFMatrix(FilePath),IDFVector());
         DocPaths = Directory.GetFiles(FilePath) ;
-        WordVector = AllWords(FilePath);
+        WordVector = AllWords();
         Titles = GetTitulos(FilePath);
     }
-    public string[] CloneTitles()
+    /*public string[] CloneTitles()
     {
         string[] output = Titles;
         return output;
@@ -35,7 +35,7 @@ public class Corpus{
     {
         double[,] output = TfIDFMatrix;
         return output;
-    }
+    }*/
     private string[] GetTitulos(string path)
     {
         string[] Paths = Directory.GetFiles(path);
@@ -58,10 +58,10 @@ public class Corpus{
         }
         return output;
     }
-    private double[] IDFVector(string Path)
+    public double[] IDFVector()
     {
         int[,] DocMatrix = TFMatrix(FilePath);
-        int N = Directory.GetFiles(Path).Length; // cantidad total de documentos
+        int N = Directory.GetFiles(FilePath).Length; // cantidad total de documentos
         int[] n = new int[DocMatrix.GetLength(0)]; // cantidad de documentos donde aparece la palabra
         
         for (int i = 0; i < n.Length; i++)
@@ -83,7 +83,7 @@ public class Corpus{
     }
     private int[,] TFMatrix(string Path)
     {
-        string[] Todas_Palabras = AllWords(Path);
+        string[] Todas_Palabras = AllWords();
         string[] Documents = Directory.GetFiles(Path);
         int[,] OutputMatrix = new int[Todas_Palabras.Length , Documents.Length]; // documentos en filas y palabras en columnas
 
@@ -115,11 +115,11 @@ public class Corpus{
         string[] split = texto.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
         return split;
     }
-    private string[] AllWords(string Path) //creando un array con todas las palabras del Corpus
+    public  string[] AllWords() //creando un array con todas las palabras del Corpus
     {
         HashSet<string> words = new HashSet<string>();
         
-        foreach(string FilePath in Directory.GetFiles(Path)) //obtiene los paths con el GetFiles  
+        foreach(string FilePath in Directory.GetFiles(FilePath)) //obtiene los paths con el GetFiles  
         {
            string[] SplitContent = SplitText(File.ReadAllText(FilePath));   //lee cada uno con ReadAllText
 
@@ -132,9 +132,9 @@ public class Corpus{
     }
 public double[] Vectorize(string query)
     {
-        double[] IDF = IDFVector(FilePath);
+        double[] IDF = IDFVector();
         string[] SplitQuery = SplitText(query);
-        string[] Words =AllWords(FilePath);
+        string[] Words =AllWords();
         double[] output = new double[Words.Length];
         for (int i = 0; i < SplitQuery.Length; i++)
         {
@@ -182,7 +182,7 @@ public class Moogle
             if(oracion.Contains(palabra))
             {
                 return oracion;
-            }
+            } 
         }
         return "...";
     }
@@ -217,10 +217,10 @@ public class Moogle
             snippets[i] = listaTuplas[i].Item3;
         }
     }
-    public static string PalabraMasImportante(string query)
+    public string PalabraMasImportante(string query)
     {
-        double[] IDFs = Este.CloneIDFVector;
-        string[] Words = Este.CloneAllWords;
+        double[] IDFs = Este.IDFVector();
+        string[] Words = Este.AllWords();
         string[] splitquery = Corpus.SplitText(query);
         int[] indexes = new int[splitquery.Length];
         
@@ -285,8 +285,8 @@ public string[] CreateSnippets(string query)
         double[] QueryVector = Este.Vectorize(query); // convirtiendo el query en un vector segun el corpus inicializado
         //Construyendo elementos del SearchItem
         double[] VectorProduct = Este.VectorProduct(QueryVector); // Valores de la similitud coseno entre la query y cada documento
-        string[] titulos = Este.CloneTitles(); // Titulos de cada documento
-        string[] snippets = Este.CreateSnippets(PalabraMasImportante(query)); //Snippets 
+        string[] titulos = Este.Titles(); // Titulos de cada documento
+        string[] snippets = CreateSnippets(Este.PalabraMasImportante(query)); //Snippets 
         //Ordenamos los resultados
         OrdenandoArrays(VectorProduct , titulos , snippets);
         //Para descartar documentos que no se relacionen con la busqueda buscamos el indice del ultimo valor diferente de 0
