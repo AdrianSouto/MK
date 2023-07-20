@@ -3,7 +3,7 @@ using System.IO;
 using System;
 public class Corpus{
 
-    string FilePath = @"@../Content";
+    string FilePath = "../Content";
     public string[] Titles; //los titulos de los documentos
     public double[,] TfIDFMatrix; //Matriz con valores de TFIDF de cada palabra en cada documento
     public string[] DocPaths; //Path de cada documento
