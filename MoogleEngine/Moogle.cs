@@ -3,6 +3,7 @@ using System.IO;
 using System;
 public class Corpus{
 
+    public static Corpus? Este;
     string FilePath = "../Content";
     public string[] Titles; //los titulos de los documentos
     public double[,] TfIDFMatrix; //Matriz con valores de TFIDF de cada palabra en cada documento
@@ -172,9 +173,8 @@ public double[] VectorProduct(double[] queryVector)
 }
 public class Moogle
 {
-        Corpus Este = new Corpus(); 
 
-    public string PrimeraOracionQueContiene(string texto , string palabra) //Halla la primera oracion de un texto que contenga la palabra introducida
+    public static string PrimeraOracionQueContiene(string texto , string palabra) //Halla la primera oracion de un texto que contenga la palabra introducida
     {
         string[] oraciones = texto.Split(".");
         foreach (string oracion in oraciones)
@@ -217,10 +217,10 @@ public class Moogle
             snippets[i] = listaTuplas[i].Item3;
         }
     }
-    public string PalabraMasImportante(string query)
+    public static string PalabraMasImportante(string query)
     {
-        double[] IDFs = Este.IDFVector();
-        string[] Words = Este.AllWords();
+        double[] IDFs = Corpus.Este.IDFVector();
+        string[] Words = Corpus.Este.AllWords();
         string[] splitquery = Corpus.SplitText(query);
         int[] indexes = new int[splitquery.Length];
         
@@ -250,13 +250,13 @@ public class Moogle
         return Words[index];
     }
 
-public string[] CreateSnippets(string query)
+public static string[] CreateSnippets(string query)
     {
-        string[] Textos = new string[Este.DocPaths.Length];
+        string[] Textos = new string[Corpus.Este.DocPaths.Length];
         string[] output = new string[Textos.Length];
-        for (int i = 0; i < Este.DocPaths.Length; i++)
+        for (int i = 0; i < Corpus.Este.DocPaths.Length; i++)
         {
-            string path = Este.DocPaths[i];
+            string path = Corpus.Este.DocPaths[i];
             Textos [i] = File.ReadAllText(path);
         }
         string[] FirstOraciones = new string[Textos.Length];
@@ -281,12 +281,16 @@ public string[] CreateSnippets(string query)
     }
     public static SearchResult Query(string query) {
         // Modifique este método para responder a la búsqueda
-
-        double[] QueryVector = Este.Vectorize(query); // convirtiendo el query en un vector segun el corpus inicializado
+        if(Corpus.Este == null)
+        {
+            Console.WriteLine("no hay documentos en los que buscar, por favor, introduzcalos en la carpeta Content");
+            return null;
+        }
+        double[] QueryVector = Corpus.Este.Vectorize(query); // convirtiendo el query en un vector segun el corpus inicializado
         //Construyendo elementos del SearchItem
-        double[] VectorProduct = Este.VectorProduct(QueryVector); // Valores de la similitud coseno entre la query y cada documento
-        string[] titulos = Este.Titles; // Titulos de cada documento
-        string[] snippets = CreateSnippets(Este.PalabraMasImportante(query)); //Snippets 
+        double[] VectorProduct = Corpus.Este.VectorProduct(QueryVector); // Valores de la similitud coseno entre la query y cada documento
+        string[] titulos = Corpus.Este.Titles; // Titulos de cada documento
+        string[] snippets = CreateSnippets(PalabraMasImportante(query)); //Snippets 
         //Ordenamos los resultados
         OrdenandoArrays(VectorProduct , titulos , snippets);
         //Para descartar documentos que no se relacionen con la busqueda buscamos el indice del ultimo valor diferente de 0
