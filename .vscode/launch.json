@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/MoogleServer/bin/Debug/net6.0/MoogleServer.dll",
+            "program": "${workspaceFolder}/MoogleServer/bin/Debug/net7.0/MoogleServer.dll",
             "args": [],
             "cwd": "${workspaceFolder}/MoogleServer",
             "stopAtEntry": false,

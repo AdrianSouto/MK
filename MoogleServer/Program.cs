@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using MoogleEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,4 +24,9 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
+if(MoogleEngine.Corpus.Este == null)
+{
+    
+    MoogleEngine.Corpus.Este = new Corpus();
+}
 app.Run();

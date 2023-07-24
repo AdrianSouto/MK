@@ -13,7 +13,7 @@ public class Corpus{
     public Corpus()
     {
         TfIDFMatrix = TF_IDF(TFMatrix(FilePath),IDFVector());
-        DocPaths = Directory.GetFiles(FilePath) ;
+        DocPaths = Directory.GetFiles(FilePath, "*.txt") ;
         WordVector = AllWords();
         Titles = GetTitulos(FilePath);
     }
@@ -39,7 +39,7 @@ public class Corpus{
     }*/
     private string[] GetTitulos(string path)
     {
-        string[] Paths = Directory.GetFiles(path);
+        string[] Paths = Directory.GetFiles(path, "*.txt");
         string[] Titulos = new string[Paths.Length];
         for (int i = 0; i < Paths.Length; i++)
         {
@@ -52,9 +52,9 @@ public class Corpus{
         double[,] output = new double[TF.GetLength(0),TF.GetLength(1)] ;
         for (int i = 0; i < TF.GetLength(0); i++)
         {
-            for (int j = 0; j < IDF.Length; j++)
+            for (int j = 0; j < TF.GetLength(1); j++)
             {
-                output[i,j] = TF[i,j]*IDF[j];
+                output[i,j] = TF[i,j]*IDF[i];
             }
         }
         return output;
@@ -62,7 +62,7 @@ public class Corpus{
     public double[] IDFVector()
     {
         int[,] DocMatrix = TFMatrix(FilePath);
-        int N = Directory.GetFiles(FilePath).Length; // cantidad total de documentos
+        int N = Directory.GetFiles(FilePath, "*.txt").Length; // cantidad total de documentos
         int[] n = new int[DocMatrix.GetLength(0)]; // cantidad de documentos donde aparece la palabra
         
         for (int i = 0; i < n.Length; i++)
@@ -78,14 +78,14 @@ public class Corpus{
         double [] output = new double[n.Length];
         for (int i = 0; i < n.Length; i++)
         {
-            output[i] = Math.Log10( N / n[i]) ;
+            output[i] = Math.Log10( N / (double) n[i]) ;
         }
         return output;
     }
     private int[,] TFMatrix(string Path)
     {
         string[] Todas_Palabras = AllWords();
-        string[] Documents = Directory.GetFiles(Path);
+        string[] Documents = Directory.GetFiles(Path, "*.txt");
         int[,] OutputMatrix = new int[Todas_Palabras.Length , Documents.Length]; // documentos en filas y palabras en columnas
 
         for(int i = 0; i<Documents.Length; i++)
@@ -103,7 +103,7 @@ public class Corpus{
         string [] Document = SplitText(File.ReadAllText(documentPath)); //array de todas las palabras del documento (repetidas)
         for(int i = 0 ; i < Document.Length ; i ++)
         {
-            if( Document[i] == word)
+            if( Document[i].ToLower() == word)
             {
                 repeticiones ++;
             }
@@ -120,7 +120,7 @@ public class Corpus{
     {
         HashSet<string> words = new HashSet<string>();
         
-        foreach(string FilePath in Directory.GetFiles(FilePath)) //obtiene los paths con el GetFiles  
+        foreach(string FilePath in Directory.GetFiles(FilePath, "*.txt")) //obtiene los paths con el GetFiles  
         {
            string[] SplitContent = SplitText(File.ReadAllText(FilePath));   //lee cada uno con ReadAllText
 
@@ -156,16 +156,16 @@ public double[] Vectorize(string query)
 public double[] VectorProduct(double[] queryVector)
 {
     double[,] Matrix = TfIDFMatrix;
-    double[] output = new double[Matrix.GetLength(0)];
-    for (int i = 0; i < Matrix.GetLength(0); i++)
+    double[] output = new double[Matrix.GetLength(1)];
+    for (int i = 0; i < Matrix.GetLength(1); i++)
     {
-        for (int j = 0; j < queryVector.Length; j++)
+        for (int j = 0; j < Matrix.GetLength(0); j++)
         {
             if(queryVector[j] == 0)
             {
                 continue;
             }
-            output[i] += Matrix[i,j]*queryVector[j];
+            output[i] += Matrix[j,i]*queryVector[j];
         }
     }
     return output;
@@ -197,7 +197,7 @@ public class Moogle
         }
         return 0;
     }
-     public static void OrdenandoArrays(double[] values, string[] titulos, string[] snippets)
+     public static List<Tuple<double, string, string>> OrdenandoArrays(double[] values, string[] titulos, string[] snippets)
     {
         List<Tuple<double, string, string>> listaTuplas = new List<Tuple<double, string, string>>();
 
@@ -207,15 +207,15 @@ public class Moogle
         }
 
 
-        listaTuplas.Sort(); // Ordenar la lista de tuplas en función del valor del primer array
+        listaTuplas = listaTuplas.OrderByDescending(x=>x.Item1).ToList(); // Ordenar la lista de tuplas en función del valor del primer array
+        return listaTuplas;
 
-
-        for (int i = 0; i < listaTuplas.Count; i++)// Extraer los valores de los otros dos arrays en el orden correcto
+        /*for (int i = 0; i < listaTuplas.Count; i++)// Extraer los valores de los otros dos arrays en el orden correcto
         {
             values[i] = listaTuplas[i].Item1;
             titulos[i] = listaTuplas[i].Item2;
             snippets[i] = listaTuplas[i].Item3;
-        }
+        }*/
     }
     public static string PalabraMasImportante(string query)
     {
@@ -237,7 +237,7 @@ public class Moogle
             
         }
         double first = IDFs[0];
-        int index = 0;
+        int index = indexes[0];
         for (int i = 1; i < indexes.Length; i++)
         {
             
@@ -279,22 +279,37 @@ public static string[] CreateSnippets(string query)
         }
         return output;
     }
+
+    public static string[] createCopy(string[] array){
+        string[] copy = new string[array.Length];
+        for(int i = 0; i < array.Length; i++){
+            copy[i] = array[i];
+        }
+        return copy;
+    }
     public static SearchResult Query(string query) {
         // Modifique este método para responder a la búsqueda
-        if(Corpus.Este == null)
+        /*if(Corpus.Este == null)
         {
             Console.WriteLine("no hay documentos en los que buscar, por favor, introduzcalos en la carpeta Content");
             return null;
-        }
+            Corpus.Este = new Corpus();
+        }*/
         double[] QueryVector = Corpus.Este.Vectorize(query); // convirtiendo el query en un vector segun el corpus inicializado
         //Construyendo elementos del SearchItem
         double[] VectorProduct = Corpus.Este.VectorProduct(QueryVector); // Valores de la similitud coseno entre la query y cada documento
-        string[] titulos = Corpus.Este.Titles; // Titulos de cada documento
+        string[] titulos = createCopy(Corpus.Este.Titles); // Titulos de cada documento
         string[] snippets = CreateSnippets(PalabraMasImportante(query)); //Snippets 
         //Ordenamos los resultados
-        OrdenandoArrays(VectorProduct , titulos , snippets);
+        List<Tuple<double, string, string>> arraysOrdenados = OrdenandoArrays(VectorProduct , titulos , snippets);
         //Para descartar documentos que no se relacionen con la busqueda buscamos el indice del ultimo valor diferente de 0
-        int items_index = LastValueIndex(VectorProduct);
+        for (int i = 0; i < arraysOrdenados.Count; i++)// Extraer los valores de los otros dos arrays en el orden correcto
+        {
+            VectorProduct[i] = arraysOrdenados[i].Item1;
+            titulos[i] = arraysOrdenados[i].Item2;
+            snippets[i] = arraysOrdenados[i].Item3;
+        }
+        int items_index = LastValueIndex(VectorProduct)+1;
 
         SearchItem[] items = new SearchItem[items_index];
         
